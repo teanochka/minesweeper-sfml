@@ -5,23 +5,24 @@
 #include <queue>
 #include <unordered_set>
 
-Field::Field(int size, int minesAmount, unsigned int firstClickX, unsigned int firstClickY) {
+Field::Field(int size) {
     this->size = size;
 
-    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+    std::srand(static_cast<int>(std::time(nullptr)));
 
     mineFlags.resize(size, std::vector<bool>(size, false));
     cells.resize(size, std::vector<Cell>(size, Cell(0, 0, false, 0)));
+}
 
+void Field::generateField(int minesAmount, int firstClickX, int firstClickY) {
     placeMines(minesAmount, firstClickX, firstClickY);
-
     setCellsInfo();
 }
 
-void Field::placeMines(int minesAmount, unsigned int firstClickX, unsigned int firstClickY) {
-    for (unsigned int i = 0; i < minesAmount; ++i) {
-        unsigned int randomRow = std::rand() % size;
-        unsigned int randomCol = std::rand() % size;
+void Field::placeMines(int minesAmount, int firstClickX, int firstClickY) {
+    for (int i = 0; i < minesAmount; ++i) {
+        int randomRow = std::rand() % size;
+        int randomCol = std::rand() % size;
 
         while (mineFlags[randomRow][randomCol] || (randomRow == firstClickX && randomCol == firstClickY)) {
             randomRow = std::rand() % size;
@@ -35,8 +36,8 @@ void Field::placeMines(int minesAmount, unsigned int firstClickX, unsigned int f
 }
 
 void Field::setCellsInfo() {
-    for (unsigned int i = 0; i < size; ++i) {
-        for (unsigned int j = 0; j < size; ++j) {
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
             int minesAround = 0;
 
             for (int a = -1; a <= 1; ++a) {
@@ -60,10 +61,19 @@ void Field::setCellsInfo() {
     }
 }
 
+void Field::clear() {
+    mineFlags.clear();
+    cells.clear();
+    mineCoordinates.clear();
 
-void Field::showOthers(unsigned int x, unsigned int y) {
+    mineFlags.resize(size, std::vector<bool>(size, false));
+    cells.resize(size, std::vector<Cell>(size, Cell(0, 0, false, 0)));
+}
+
+
+void Field::showOthers(int x, int y) {
     if (x >= 0 && x < size && y >= 0 && y < size) {
-        std::queue<std::pair<unsigned int, unsigned int>> queue;
+        std::queue<std::pair<int, int>> queue;
         std::unordered_set<int> registry;
 
         queue.push({ x, y });
@@ -98,18 +108,31 @@ void Field::showOthers(unsigned int x, unsigned int y) {
     }
 }
 
-bool Field::checkWinCondition() {
+bool Field::checkWinConditionFlags(int flags) {
     for (const auto& coordinates : mineCoordinates) {
-        unsigned int x = coordinates.first;
-        unsigned int y = coordinates.second;
+        auto [x, y] = coordinates;
         if (!cells[x][y].getIsFlagged()) {
             return false;
+        }
+    }
+    if (flags == 0) {
+        return true;
+    }
+    else return false;
+}
+
+bool Field::checkWinConditionOpenCells() {
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            if (!cells[i][j].getIsOpen() && !cells[i][j].getIsMine()) {
+                return false;
+            }
         }
     }
     return true;
 }
 
-bool Field::isInField(unsigned int x, unsigned int y) {
+bool Field::isInField(int x, int y) {
     if (x < size && y < size) {
         return true;
     }
@@ -118,8 +141,8 @@ bool Field::isInField(unsigned int x, unsigned int y) {
 
 void Field::render(sf::RenderWindow& window, int resolution, sf::Font font) {
     const float cellSize = static_cast<float>(resolution) / size;
-    for (unsigned int i = 0; i < size; ++i) {
-        for (unsigned int j = 0; j < size; ++j) {
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
             sf::RectangleShape cell(sf::Vector2f(cellSize, cellSize));
             cell.setPosition(j * cellSize, i * cellSize);
             cell.setOutlineThickness(cellSize * 0.02);
@@ -158,29 +181,21 @@ void Field::render(sf::RenderWindow& window, int resolution, sf::Font font) {
     }
 }
 
-Cell& Field::getCell(unsigned int x, unsigned int y)
+Cell& Field::getCell(int x, int y)
 {
     return cells[x][y];
 }
 
-void Field::openCell(unsigned int x, unsigned int y) {
-    cells[x][y].setOpen();
-}
-
-void Field::toggleFlag(unsigned int x, unsigned int y) {
-    cells[x][y].setFlag();
-}
-
-Field& Field::operator=(const Field& other) {
-    this->size = other.size;
-
-    this->mineFlags = other.mineFlags;
-
-    for (unsigned int i = 0; i < size; ++i) {
-        for (unsigned int j = 0; j < size; ++j) {
-            this->cells[i][j] = other.cells[i][j];
+void Field::openCell(int x, int y, bool& lose) {
+    if (cells[x][y].getIsMine()) {
+        lose = true;
+    }
+    else if (!cells[x][y].getIsOpen()) {
+        cells[x][y].setOpen();
+        if (!cells[x][y].getMinesAround()) {
+            showOthers(x, y);
         }
     }
-    return *this;
 }
+
 

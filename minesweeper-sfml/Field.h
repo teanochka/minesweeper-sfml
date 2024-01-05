@@ -11,15 +11,17 @@ private:
     std::vector<std::pair<int, int>> mineCoordinates;
 
 public:
-    Field(int size, int mines, unsigned int firstClickX, unsigned int firstClickY);
-    void placeMines(int minesAmount, unsigned int firstClickX, unsigned int firstClickY);
+    Field(int size);
+    void clear();
+    void generateField(int mines, int firstClickX, int firstClickY);
+    void placeMines(int minesAmount, int firstClickX, int firstClickY);
     void setCellsInfo();
-    void showOthers(unsigned int x, unsigned int y);
-    Cell& getCell(unsigned int x, unsigned int y);
-    void openCell(unsigned int x, unsigned int y);
-    void toggleFlag(unsigned int x, unsigned int y);
-    bool checkWinCondition();
-    bool isInField(unsigned int x, unsigned int y);
+    void showOthers(int x, int y);
+    Cell& getCell(int x, int y);
+    void openCell(int x, int y, bool& lose);
+    bool checkWinConditionFlags(int flags);
+    bool checkWinConditionOpenCells();
+    bool isInField(int x, int y);
     void render(sf::RenderWindow& window, int resolution, sf::Font font);
-    Field& operator=(const Field& other);
+
 };

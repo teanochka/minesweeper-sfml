@@ -1,32 +1,29 @@
 #include "Cell.h"
 
-Cell::Cell(unsigned int posX, unsigned int posY)
-    : isFlagged(false), isMine(false), isOpen(false), minesAround(0), x(posX), y(posY) {}
-
-Cell::Cell(unsigned int posX, unsigned int posY, bool isMine, int minesAround)
+Cell::Cell(int posX, int posY, bool isMine, int minesAround)
     : isFlagged(false), isMine(isMine), isOpen(false), minesAround(minesAround), x(posX), y(posY) {}
 
-bool Cell::getIsFlagged() const {
+bool Cell::getIsFlagged() {
     return isFlagged;
 }
 
-bool Cell::getIsMine() const {
+bool Cell::getIsMine() {
     return isMine;
 }
 
-bool Cell::getIsOpen() const {
+bool Cell::getIsOpen() {
     return isOpen;
 }
 
-unsigned int Cell::getMinesAround() const {
+int Cell::getMinesAround() {
     return minesAround;
 }
 
-int Cell::getX() const {
+int Cell::getX() {
     return x;
 }
 
-int Cell::getY() const {
+int Cell::getY() {
     return y;
 }
 
@@ -40,15 +37,4 @@ void Cell::unflag() {
 
 void Cell::setOpen() {
     isOpen = true;
-}
-
-Cell& Cell::operator=(const Cell& other) {
-    isFlagged = other.isFlagged;
-    isMine = other.isMine;
-    isOpen = other.isOpen;
-    minesAround = other.minesAround;
-    x = other.x;
-    y = other.y;
-
-    return *this;
 }

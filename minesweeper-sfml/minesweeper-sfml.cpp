@@ -14,88 +14,67 @@ std::string formatTime(int timerValue) {
     return minsStr + ":" + secsStr;
 }
 
+void drawText(sf::RenderWindow& window, int resolution, std::string text, sf::Font font, double fontSize, sf::Color color, double posX, double posY){
+    sf::Text Text(text, font, fontSize);
+    Text.setFillColor(color);
+    Text.setOrigin(Text.getLocalBounds().width / 2, Text.getLocalBounds().height / 2);
+    Text.setPosition(posX * resolution, posY * resolution);
+    window.draw(Text);
+}
+
+void drawRectangle(sf::RenderWindow& window, int resolution, double width, double height, sf::Color color, bool center, double posX, double posY) {
+    sf::RectangleShape Rect(sf::Vector2f(width * resolution, height * resolution));
+    Rect.setFillColor(color);
+    if (center){
+        Rect.setOrigin(Rect.getLocalBounds().width / 2, Rect.getLocalBounds().height / 2);
+    }
+    Rect.setPosition(posX * resolution, posY * resolution);
+    window.draw(Rect);
+}
+
 void showSidePannel(sf::RenderWindow& window, int resolution, int flagsCount, int timerValue, sf::Font font) {
     //фон
-    sf::RectangleShape backgroundRect(sf::Vector2f(0.3 * resolution, resolution));
-    backgroundRect.setFillColor(sf::Color(85, 22, 116));
-    backgroundRect.setPosition(resolution, 0);
+    drawRectangle(window, resolution, 0.3, 1, sf::Color(85, 22, 116), false, 1, 0);
 
-    //надпись сверху
-    sf::Text flagsText("Flags:", font, 0.3 * resolution / 10);
-    flagsText.setFillColor(sf::Color(153, 204, 237));
-    flagsText.setOrigin(flagsText.getLocalBounds().width / 2, flagsText.getLocalBounds().height / 2);
-    flagsText.setPosition(1.15 * resolution, 0.25 * resolution);
+    //надписи флаги и таймер
+    drawText(window, resolution, "Flags:", font, 0.3 * resolution / 10, sf::Color(153, 204, 237), 1.15, 0.25);
+    drawText(window, resolution, "Timer:", font, 0.3 * resolution / 10, sf::Color(153, 204, 237), 1.15, 0.55);
 
-    //прямоугольник для флагов
-    sf::RectangleShape flagsRect(sf::Vector2f(0.24 * resolution, 0.1 * resolution));
-    flagsRect.setFillColor(sf::Color(197, 254, 254));
-    flagsRect.setOrigin(flagsRect.getLocalBounds().width / 2, flagsRect.getLocalBounds().height / 2);
-    flagsRect.setPosition(1.15 * resolution, 0.35 * resolution);
-    //flagsRect.setPosition(1.03 * resolution, resolution / 5 + (textBounds.height * 1.5));
+    //рамки
+    drawRectangle(window, resolution, 0.24, 0.1, sf::Color(197, 254, 254), true, 1.15, 0.35);
+    drawRectangle(window, resolution, 0.24, 0.1, sf::Color(197, 254, 254), true, 1.15, 0.65);
 
-    //количество флагов
-    sf::Text flags(std::to_string(flagsCount), font, 0.3 * resolution / 8);
-    flags.setFillColor(sf::Color(126, 57, 182));
-    flags.setOrigin(flags.getLocalBounds().width / 2, flags.getLocalBounds().height / 2);
-    flags.setPosition(1.15 * resolution, 0.35 * resolution);
+    //количество флагов и таймер
+    drawText(window, resolution, std::to_string(flagsCount), font, 0.3 * resolution / 8, sf::Color(126, 57, 182), 1.15, 0.35);
+    drawText(window, resolution, formatTime(timerValue), font, 0.3 * resolution / 8, sf::Color(126, 57, 182), 1.15, 0.65);
+}
 
-    //надпись сверху
-    sf::Text timerText("Timer:", font, 0.3 * resolution / 10);
-    timerText.setFillColor(sf::Color(153, 204, 237));
-    timerText.setOrigin(timerText.getLocalBounds().width / 2, timerText.getLocalBounds().height / 2);
-    timerText.setPosition(1.15 * resolution, 0.55 * resolution);
+void showRestartButton(sf::RenderWindow& window, int resolution, sf::Font font) {
+    drawRectangle(window, resolution, 0.6, 0.1, sf::Color(126, 57, 182), true, 0.5, 0.55);
+    drawText(window, resolution, "Restart", font, 0.9 * resolution / 20, sf::Color(197, 254, 254), 0.5, 0.55);
+}
 
-    //прямоугольник для таймера
-    sf::RectangleShape timerRect(sf::Vector2f(0.24 * resolution, 0.1 * resolution));
-    timerRect.setFillColor(sf::Color(197, 254, 254));
-    timerRect.setOrigin(timerRect.getLocalBounds().width / 2, timerRect.getLocalBounds().height / 2);
-    timerRect.setPosition(1.15 * resolution, 0.65 * resolution);
-
-    //таймер
-    sf::Text timer(formatTime(timerValue), font, 0.3 * resolution / 8);
-    timer.setFillColor(sf::Color(126, 57, 182));
-    timer.setOrigin(timer.getLocalBounds().width / 2, timer.getLocalBounds().height / 2);
-    timer.setPosition(1.15 * resolution, 0.65 * resolution);
-
-    window.draw(backgroundRect);
-    window.draw(flagsRect);
-    window.draw(timerRect);
-    window.draw(flagsText);
-    window.draw(flags);
-    window.draw(timer);
-    window.draw(timerText);
+void restart(Field& field, bool& firstClick, int& flags, int mines, bool& lose, bool& win, int& timerValue, std::time_t& startTime) {
+    firstClick = true;
+    flags = mines;
+    lose = false;
+    win = false;
+    timerValue = 0;
+    startTime = std::time(nullptr);
+    field.clear();
 }
 
 void showWin(sf::RenderWindow& window, int resolution, sf::Font font) {
-
-    sf::Text gameOverText("You won!", font, 0.9 * resolution / 20);
-    gameOverText.setFillColor(sf::Color(126, 57, 182));
-
-    sf::RectangleShape backgroundRect(sf::Vector2f(resolution, resolution));
-    backgroundRect.setFillColor(sf::Color(197, 254, 254));
-
-    sf::FloatRect textBounds = gameOverText.getLocalBounds();
-    gameOverText.setPosition((resolution - textBounds.width) / 2, (resolution - textBounds.height) / 2);
-
-    window.draw(backgroundRect);
-    window.draw(gameOverText);
+    drawRectangle(window, resolution, 1, 1, sf::Color(197, 254, 254), false, 0, 0);
+    drawText(window, resolution, "You won!", font, 0.9 * resolution / 20, sf::Color(126, 57, 182), 0.5, 0.45);
+    showRestartButton(window, resolution, font);
 }
 
 void showGameOver(sf::RenderWindow& window, int resolution, sf::Font font) {
-
-    sf::Text gameOverText("Oops, you exploded!", font, 0.9 * resolution / 20);
-    gameOverText.setFillColor(sf::Color(126, 57, 182));
-
-    sf::RectangleShape backgroundRect(sf::Vector2f(resolution, resolution));
-    backgroundRect.setFillColor(sf::Color(197, 254, 254));
-
-    sf::FloatRect textBounds = gameOverText.getLocalBounds();
-    gameOverText.setPosition((resolution - textBounds.width) / 2, (resolution - textBounds.height) / 2);
-
-    window.draw(backgroundRect);
-    window.draw(gameOverText);
+    drawRectangle(window, resolution, 1, 1, sf::Color(197, 254, 254), false, 0, 0);
+    drawText(window, resolution, "Oops, you exploded!", font, 0.9 * resolution / 20, sf::Color(126, 57, 182), 0.5, 0.45);
+    showRestartButton(window, resolution, font);
 }
-
 
 int main()
 {
@@ -105,11 +84,11 @@ int main()
     //можно менять разрешение и размер поля 
     int resolution = 800;
     int fieldSize = 15;
-    int mines = 20;
+    int mines = 30;
     RenderWindow window(VideoMode(resolution * 1.3, resolution), "Minesweeper");
 
     //поле сгенерируется по нажатию
-    Field f1(fieldSize, 0, 0, 0);
+    Field f1(fieldSize);
 
     //исключаем возможность проигрыша на первом ходу
     bool firstClick = true;
@@ -120,12 +99,6 @@ int main()
 
     std::time_t startTime = std::time(nullptr);
     int timerValue = 0;
-
-    //sf::Font font;
-    //font.loadFromFile("assets/fonts/mine-sweeper.TTF");
-    //sf::Text text("Hello world", font, 100);
-    //text.setPosition(20,20);
-    //text.setFillColor(sf::Color::Cyan);
 
     while (window.isOpen())
     {
@@ -140,46 +113,54 @@ int main()
                 if (event.mouseButton.button == Mouse::Left)
                 {
                     Vector2i mousePos = Mouse::getPosition(window);
-                    int y = static_cast<int>(std::ceil(static_cast<double>(mousePos.x) * fieldSize / resolution));
-                    int x = static_cast<int>(std::ceil(static_cast<double>(mousePos.y) * fieldSize / resolution));
 
-                    if (f1.isInField(x - 1, y - 1)) {
-                        if (firstClick) {
-                            firstClick = false;
-                            Field gen(fieldSize, mines, x - 1, y - 1);
-                            f1 = gen;
-                            f1.openCell(x - 1, y - 1);
-                            f1.showOthers(x - 1, y - 1);
+                    if (win || lose) {
+                        double x = (double)(mousePos.x) / resolution;
+                        double y = (double)(mousePos.y) / resolution;
+
+                        if (x > 0.2 && x < 0.8 && y > 0.5 && y < 0.65) {
+                            restart(f1, firstClick, flags, mines, lose, win, timerValue, startTime);
                         }
-                        else if (f1.getCell(x - 1, y - 1).getIsMine()) {
-                            lose = true;
-                        }
-                        else if (!f1.getCell(x - 1, y - 1).getIsOpen()) {
-                            f1.openCell(x - 1, y - 1);
-                            if (!f1.getCell(x - 1, y - 1).getMinesAround()) {
-                                f1.showOthers(x - 1, y - 1);
+                    }
+                    
+                    else {
+                        int y = (int)(std::ceil((double)(mousePos.x) * fieldSize / resolution)) - 1;
+                        int x = (int)(std::ceil((double)(mousePos.y) * fieldSize / resolution)) - 1;
+
+                        if (f1.isInField(x, y) && !f1.getCell(x, y).getIsFlagged()) {
+                            if (firstClick) {
+                                firstClick = false;
+                                f1.generateField(mines, x, y);
+                                f1.getCell(x, y).setOpen();
+                                //открываем область, даже если попали на значущую клетку
+                                f1.showOthers(x, y);
                             }
+                            else f1.openCell(x, y, lose);
                         }
                     }
                 }
-                else if (event.mouseButton.button == Mouse::Right)
+                else if (event.mouseButton.button == Mouse::Right && !win && !lose)
                 {
                     Vector2i mousePos = Mouse::getPosition(window);
-                    int y = static_cast<int>(std::ceil(static_cast<double>(mousePos.x) * fieldSize / resolution));
-                    int x = static_cast<int>(std::ceil(static_cast<double>(mousePos.y) * fieldSize / resolution));
+                    int y = static_cast<int>(std::ceil(static_cast<double>(mousePos.x) * fieldSize / resolution)) - 1;
+                    int x = static_cast<int>(std::ceil(static_cast<double>(mousePos.y) * fieldSize / resolution)) - 1;
 
-                    if (f1.isInField(x - 1, y - 1)) {
-                        if (!f1.getCell(x - 1, y - 1).getIsFlagged()) {
-                            f1.getCell(x - 1, y - 1).setFlag();
+                    if (f1.isInField(x, y) && !f1.getCell(x, y).getIsOpen()) {
+                        if (!f1.getCell(x, y).getIsFlagged()) {
+                            f1.getCell(x, y).setFlag();
                             --flags;
                         }
                         else if (flags < mines) {
-                            f1.getCell(x - 1, y - 1).unflag();
+                            f1.getCell(x, y).unflag();
                             ++flags;
                         }
                     }
+
                 }
             }
+        }
+        if (!firstClick) {
+            win = (f1.checkWinConditionFlags(flags) || f1.checkWinConditionOpenCells());
         }
 
         if (!win && !lose) {
@@ -192,7 +173,9 @@ int main()
 
         window.clear();
 
-        if (win) {}
+        if (win) {
+            showWin(window, resolution, font);
+        }
         else if (lose) {
             showGameOver(window, resolution, font);
         }
@@ -203,7 +186,8 @@ int main()
         showSidePannel(window, resolution, flags, timerValue, font);
         //showGameOver(window, resolution, font);
         window.display();
-
     }
-
 }
+//сделать экран победы полупрозрачным и открыть все клетки
+
+//настройка сложность (може бiть), изменить условие выигрыша с клетками, сделать так, чтобы флаг не ставился на открытую клетку и нельзя открыть клетку с флагом
