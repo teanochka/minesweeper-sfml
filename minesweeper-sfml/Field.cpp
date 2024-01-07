@@ -8,8 +8,6 @@
 Field::Field(int size) {
     this->size = size;
 
-    std::srand(static_cast<int>(std::time(nullptr)));
-
     mineFlags.resize(size, std::vector<bool>(size, false));
     cells.resize(size, std::vector<Cell>(size, Cell(0, 0, false, 0)));
 }
@@ -20,6 +18,8 @@ void Field::generateField(int minesAmount, int firstClickX, int firstClickY) {
 }
 
 void Field::placeMines(int minesAmount, int firstClickX, int firstClickY) {
+    std::srand((int)(std::time(nullptr)));
+
     for (int i = 0; i < minesAmount; ++i) {
         int randomRow = std::rand() % size;
         int randomCol = std::rand() % size;
@@ -95,12 +95,16 @@ void Field::showOthers(int x, int y) {
                 }
 
                 if (!cells[xx][yy].getIsOpen() && cells[xx][yy].getMinesAround() == 0 && !cells[xx][yy].getIsMine()) {
-                    cells[xx][yy].setOpen();
+                    if (!cells[xx][yy].getIsFlagged()) {
+                        cells[xx][yy].setOpen();
+                    }
                     registry.insert(index);
                     queue.push({ xx, yy });
                 }
-                else if (!cells[xx][yy].getIsOpen() && cells[xx][yy].getMinesAround() > 0 && cells[xx][yy].getMinesAround() < 9 && !cells[xx][yy].getIsMine()) {
-                    cells[xx][yy].setOpen();
+                else if (!cells[xx][yy].getIsOpen() && cells[xx][yy].getMinesAround() > 0 && !cells[xx][yy].getIsMine()) {
+                    if (!cells[xx][yy].getIsFlagged()) {
+                        cells[xx][yy].setOpen();
+                    }
                     registry.insert(index);
                 }
             }

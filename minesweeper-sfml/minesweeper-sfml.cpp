@@ -84,7 +84,7 @@ int main()
     //можно менять разрешение и размер поля 
     int resolution = 800;
     int fieldSize = 15;
-    int mines = 30;
+    int mines = 20;
     RenderWindow window(VideoMode(resolution * 1.3, resolution), "Minesweeper");
 
     //поле сгенерируется по нажатию
@@ -110,15 +110,17 @@ int main()
 
             if (event.type == Event::MouseButtonPressed)
             {
+                Vector2i mousePos = Mouse::getPosition(window);
+
                 if (event.mouseButton.button == Mouse::Left)
                 {
-                    Vector2i mousePos = Mouse::getPosition(window);
-
-                    if (win || lose) {
+                    if (win || lose) 
+                    {
                         double x = (double)(mousePos.x) / resolution;
                         double y = (double)(mousePos.y) / resolution;
 
-                        if (x > 0.2 && x < 0.8 && y > 0.5 && y < 0.65) {
+                        if (x > 0.2 && x < 0.8 && y > 0.5 && y < 0.65) 
+                        {
                             restart(f1, firstClick, flags, mines, lose, win, timerValue, startTime);
                         }
                     }
@@ -127,8 +129,10 @@ int main()
                         int y = (int)(std::ceil((double)(mousePos.x) * fieldSize / resolution)) - 1;
                         int x = (int)(std::ceil((double)(mousePos.y) * fieldSize / resolution)) - 1;
 
-                        if (f1.isInField(x, y) && !f1.getCell(x, y).getIsFlagged()) {
-                            if (firstClick) {
+                        if (f1.isInField(x, y) && !f1.getCell(x, y).getIsFlagged()) 
+                        {
+                            if (firstClick) 
+                            {
                                 firstClick = false;
                                 f1.generateField(mines, x, y);
                                 f1.getCell(x, y).setOpen();
@@ -141,11 +145,10 @@ int main()
                 }
                 else if (event.mouseButton.button == Mouse::Right && !win && !lose)
                 {
-                    Vector2i mousePos = Mouse::getPosition(window);
-                    int y = static_cast<int>(std::ceil(static_cast<double>(mousePos.x) * fieldSize / resolution)) - 1;
-                    int x = static_cast<int>(std::ceil(static_cast<double>(mousePos.y) * fieldSize / resolution)) - 1;
+                    int y = (int)(std::ceil(static_cast<double>(mousePos.x) * fieldSize / resolution)) - 1;
+                    int x = (int)(std::ceil(static_cast<double>(mousePos.y) * fieldSize / resolution)) - 1;
 
-                    if (f1.isInField(x, y) && !f1.getCell(x, y).getIsOpen()) {
+                    if (f1.isInField(x, y) && !f1.getCell(x, y).getIsOpen()&&!firstClick) {
                         if (!f1.getCell(x, y).getIsFlagged()) {
                             f1.getCell(x, y).setFlag();
                             --flags;
@@ -161,15 +164,17 @@ int main()
         }
         if (!firstClick) {
             win = (f1.checkWinConditionFlags(flags) || f1.checkWinConditionOpenCells());
-        }
 
-        if (!win && !lose) {
-            std::time_t currentTime = std::time(nullptr);
-            if (currentTime - startTime >= 1) {
-                startTime = currentTime;
-                ++timerValue;
+            if (!win && !lose) {
+                std::time_t currentTime = std::time(nullptr);
+                if (currentTime - startTime >= 1) {
+                    startTime = currentTime;
+                    ++timerValue;
+                }
             }
         }
+
+ 
 
         window.clear();
 
